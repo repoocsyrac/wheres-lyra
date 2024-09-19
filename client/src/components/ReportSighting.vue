@@ -39,8 +39,6 @@
                         console.error(error);
                     }
                 }
-                //await axios.post('http://127.0.0.1:5000/api/sightings', { location: loc }, {headers: {'Content-Type': 'application/json'}});
-                //alert('Lyra sighting reported!');
             }
         }
     };
