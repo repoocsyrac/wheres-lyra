@@ -11,6 +11,7 @@
 
 <script>
     import axios from 'axios';
+    import { io } from "socket.io-client";
 
     export default {
         data() {
@@ -20,6 +21,16 @@
         },
 
         mounted() {
+            // Connect to websocket 
+            const socket = io("http://127.0.0.1:5000");
+            
+            // Listen for new_sighting events
+            socket.on('new_sighting', (sighting) => {
+                console.log("New sighting received: ", sighting);
+                this.sightings.unshift(sighting); // Adds new sighting to the top of the list
+            });
+
+            // Fetch initial list of sightings
             this.getSightings();
         },
 

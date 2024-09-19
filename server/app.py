@@ -1,10 +1,12 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS, cross_origin
 from pymongo import MongoClient, DESCENDING
+from flask_socketio import SocketIO
 import datetime
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins" : "http://127.0.0.1:8080"}})
+socketio = SocketIO(app, cors_allowed_origins="*")
 
 # Connect to MongoDB
 client = MongoClient('mongodb://127.0.0.1:27017/')
@@ -39,6 +41,11 @@ def add_sighting():
         "timestamp": datetime.datetime.now()
     }
     sightings_collection.insert_one(new_sighting)
+
+    # Emit new sighting to all connected clients
+    socketio.emit('new_sighting', {"location": data['location'],
+                                   "timestamp": new_sighting['timestamp'].strftime('%Y-%m-%d %H:%M:%S')})
+    
     return jsonify({"message": "Sighting added!"}), 201
 
 if __name__ == "__main__":
