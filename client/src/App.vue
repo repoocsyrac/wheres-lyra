@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <h1>Where's Lyra?</h1>
+    <img src="./assets/lyra.jpeg" alt="Lyra the cat" class="img-rounded">
     <ReportSighting />
     <SightingsList />
   </div>
@@ -24,7 +25,12 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+  background-color: #fefaf1;
+  /*color: #2c3e50;
+  margin-top: 60px;*/
+}
+
+html {
+  background-color: #fefaf1;
 }
 </style>

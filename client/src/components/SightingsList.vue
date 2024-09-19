@@ -1,7 +1,7 @@
 <template>
     <div>
         <h2>Recent Sightings</h2>
-        <ul>
+        <ul class="list-unstyled">
             <li v-for="sighting in sightings" :key="sighting.id">
                 {{ sighting.location }} - {{ new Date(sighting.timestamp).toLocaleString() }}
             </li>
