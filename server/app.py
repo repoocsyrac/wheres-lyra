@@ -12,6 +12,13 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 client = MongoClient('mongodb://127.0.0.1:27017/')
 db = client['wheres_lyra_db']
 sightings_collection = db['sightings']
+cooldown_collection = db['cooldowns']
+
+COOLDOWN_PERIOD = 30*60 # 30 min cooldown
+
+# Get client IP to implement cooldown
+def get_client_ip():
+    return request.headers.get('X-Forwarded-For', request.remote_addr)
 
 
 @app.route('/')
@@ -36,6 +43,26 @@ def add_sighting():
     if 'location' not in data:
         return jsonify({"error": "Location is required"}), 400
     
+    # Get client's IP
+    client_ip = get_client_ip()
+
+    # Get current time
+    current_time = datetime.datetime.now()
+
+    # Check if the user has previously reported a sighting
+    last_sighting = cooldown_collection.find_one({"ip": client_ip})
+
+    # If user has reported a sighting before, check against cooldown
+    if last_sighting:
+        last_sighting_time = last_sighting['last_sighting_time']
+        time_since_last_sighting = (current_time - last_sighting_time).total_seconds()
+
+        if time_since_last_sighting < COOLDOWN_PERIOD:
+            time_left = COOLDOWN_PERIOD - time_since_last_sighting
+            return jsonify({"error": "You are on cooldown", 
+                            "time_left": time_left}), 429
+
+    # If user has not reported a sighting before, or cooldown has passed, add new sighting
     new_sighting = {
         "location": data['location'],
         "timestamp": datetime.datetime.now()
@@ -45,6 +72,10 @@ def add_sighting():
     # Emit new sighting to all connected clients
     socketio.emit('new_sighting', {"location": data['location'],
                                    "timestamp": new_sighting['timestamp'].strftime('%Y-%m-%d %H:%M:%S')})
+    
+    # Update users cooldown timestamp
+    cooldown_collection.update_one({"ip": client_ip}, 
+                                   {"$set": {"last_sighting_time": current_time}}, upsert=True)
     
     return jsonify({"message": "Sighting added!"}), 201
 

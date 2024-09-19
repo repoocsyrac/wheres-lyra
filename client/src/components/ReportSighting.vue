@@ -20,10 +20,27 @@
     import axios from 'axios';
 
     export default {
+        data() {
+            return {
+                sightings: [],
+                cooldownTimeLeft: 0
+            };
+        },
         methods: {
             async reportSighting(loc) {
-                await axios.post('http://127.0.0.1:5000/api/sightings', { location: loc }, {headers: {'Content-Type': 'application/json'}});
-                alert('Lyra sighting reported!');
+                try{
+                    await axios.post('http://127.0.0.1:5000/api/sightings', { location: loc }, {headers: {'Content-Type': 'application/json'}});
+                    this.cooldownTimeLeft = 0;
+                } catch (error) {
+                    if (error.response && error.response.status == 429) {
+                        this.cooldownTimeLeft = Math.ceil(error.response.data.time_left);
+                        alert(`You must wait ${this.cooldownTimeLeft} seconds before reporting again`);
+                    } else {
+                        console.error(error);
+                    }
+                }
+                //await axios.post('http://127.0.0.1:5000/api/sightings', { location: loc }, {headers: {'Content-Type': 'application/json'}});
+                //alert('Lyra sighting reported!');
             }
         }
     };
