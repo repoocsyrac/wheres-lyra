@@ -4,16 +4,35 @@
     <img src="./assets/lyra.jpeg" alt="Lyra the cat" class="img-rounded">
     <ReportSighting />
     <SightingsList />
+    <SightingsChart :sightings-data="sightings" />
+    
   </div>
 </template>
 
 <script>
+  import axios from 'axios';
   import ReportSighting from './components/ReportSighting.vue';
   import SightingsList from './components/SightingsList.vue';
+  import SightingsChart from './components/SightingsChart.vue';
 
   export default {
+    data() {
+      return {
+        sightings: []
+      };
+    },
     components: {
-      ReportSighting, SightingsList
+      ReportSighting, SightingsList, SightingsChart
+    },
+    async mounted() {
+      // Fetch sightings from backend
+      this.getSightings();
+    },
+    methods: {
+        async getSightings() {
+            const response = await axios.get('http://127.0.0.1:5000/api/sightings');
+            this.sightings = response.data;
+        }
     }
   };
   
